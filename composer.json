@@ -1,0 +1,36 @@
+{
+  "name": "test/commission-task-skeleton",
+  "description": "Skeleton for recruitment task",
+  "keywords": [],
+  "type": "project",
+  "license":"proprietary",
+  "autoload": {
+    "psr-4": {
+      "Homework\\CommissionTask\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Homework\\CommissionTask\\Tests\\": "tests"
+    }
+  },
+  "require": {
+    "php": ">=7.0",
+    "ext-bcmath": "*",
+    "benmajor/exchange-rates-api": "^2.0"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "2.16",
+    "phpunit/phpunit": "^8.5"
+  },
+  "config": {
+    "sort-packages": true,
+    "bin-dir": "bin"
+  },
+  "scripts": {
+    "phpunit": "phpunit",
+    "fix-cs": "php-cs-fixer fix",
+    "test-cs": "php-cs-fixer fix --dry-run -v",
+    "test": ["@phpunit", "@test-cs"]
+  }
+}
