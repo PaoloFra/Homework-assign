@@ -146,7 +146,7 @@ class CommissionFee
 
                 break;
         }
-echo $clientID, ' ', $date, ' ', $this->withdrawBalance[$clientID][$date]['itemNumber'], ' ', $amountUsedInEuro, ' ', $amount, ' ', bcmul((string)$fee, '0.01', $decimalPoint), " $fee \n";
+
         return bcmul((string)$fee, '0.01', $decimalPoint);
     }
 }
