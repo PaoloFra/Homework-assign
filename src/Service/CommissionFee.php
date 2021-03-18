@@ -9,9 +9,9 @@ use \BenMajor\ExchangeRatesAPI\ExchangeRatesAPI;
 class CommissionFee
 {
     /**
-     * @var string[]
+     * @var string[]|array
      */
-    private static $currencyAllowed = [
+    private $currencyAllowed = [
         'EUR',
         'USD',
         'JPY',
@@ -20,7 +20,7 @@ class CommissionFee
     /**
      * @var int
      */
-    private static $weeklyAmount = 1000;
+    private $weeklyAmount = 1000;
 
     /**
      * @var array
@@ -47,30 +47,42 @@ class CommissionFee
         $this->currencyRates = $currencyRates;
     }
 
-    public function process($operations)
+    /**
+     * @param array $operations
+     * @return array
+     */
+    public function process(array $operations)
     {
         $this->operations = $operations;
 
+        // fill Currency Exchange Rates from api.exchangeratesapi.io if not provided
         if (count($this->currencyRates) === 0) {
             $this->fillExchangeRates();
         }
 
         foreach ($operations as $operation) {
             list($date, $clientID, $clientType, $operationType, $amount, $currency) = $operation;
-            if (in_array($currency, self::$currencyAllowed, true)) {
+
+            if (in_array($currency, $this->currencyAllowed, true)) {
                 $beginningOfWeek = date('Y-m-d', strtotime('Monday this week', strtotime($date)));
                 $operationTypeMethod = $operationType . 'Charge';
-                // $operationType: deposit or withdraw
+                // $operationType: 'deposit' or 'withdraw'
                 // processed with depositCharge or withdrawCharge method
                 $this->fees[] = $this->$operationTypeMethod($beginningOfWeek, $clientID, $clientType, $amount, $currency);
+            } else {
+                $this->fees[] = 'N/A';
             }
         }
         return $this->fees;
     }
 
+    /**
+     * @return void
+     * @throws \BenMajor\ExchangeRatesAPI\Exception
+     */
     private function fillExchangeRates()
     {
-        foreach (self::$currencyAllowed as $item) {
+        foreach ($this->currencyAllowed as $item) {
             if ($item === 'EUR') {
                 $this->currencyRates[$item] = 1;
             } else {
@@ -80,6 +92,15 @@ class CommissionFee
         }
     }
 
+    /**
+     * @param string $date
+     * @param string $clientID
+     * @param string $clientType
+     * @param string $amount
+     * @param string $currency
+     *
+     * @return string
+     */
     private function depositCharge($date, $clientID, $clientType, $amount, $currency)
     {
         $decimalPoint = (int)strpos(strrev($amount), '.', 0);
@@ -89,17 +110,19 @@ class CommissionFee
     }
 
     /**
-     * @param $date
-     * @param $clientID
-     * @param $clientType
-     * @param $amount
-     * @param $currency
+     * @param string $date
+     * @param string $clientID
+     * @param string $clientType
+     * @param string $amount
+     * @param string $currency
+     *
      * @return string
      */
     private function withdrawCharge($date, $clientID, $clientType, $amount, $currency)
     {
         $decimalPoint = (int)strpos(strrev($amount), '.', 0);
         $powerCoeff = 10 ** ($decimalPoint - 2);
+        // for rounded up to currency's decimal places
 
         switch ($clientType) {
             case 'business':
@@ -114,11 +137,11 @@ class CommissionFee
                 if ($this->withdrawBalance[$clientID][$date]['itemNumber'] > 3) {
                     $fee = ceil($amount * 0.3 * $powerCoeff) / $powerCoeff;
                 } else {
-                    if ($amountUsedInEuro < self::$weeklyAmount)
+                    if ($amountUsedInEuro < $this->weeklyAmount)
                     {
                         $fee = 0;
                     } else {
-                        $fee = ceil((($amountUsedInEuro - self::$weeklyAmount) * $this->currencyRates[$currency]) * 0.3 * $powerCoeff) / $powerCoeff;
+                        $fee = ceil((($amountUsedInEuro - $this->weeklyAmount) * $this->currencyRates[$currency]) * 0.3 * $powerCoeff) / $powerCoeff;
                         $this->withdrawBalance[$clientID][$date]['itemNumber'] = 3;
                     }
                 }
