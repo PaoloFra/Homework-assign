@@ -50,36 +50,22 @@ class CommissionFee
     public function process($operations)
     {
         $this->operations = $operations;
-        if (!isset($this->currencyRates)) {
+
+        if (count($this->currencyRates) === 0) {
             $this->fillExchangeRates();
         }
-//        print_r($this->currencyRates);
 
         foreach ($operations as $operation) {
-//            print_r($operation);
             list($date, $clientID, $clientType, $operationType, $amount, $currency) = $operation;
             if (in_array($currency, self::$currencyAllowed, true)) {
-//                echo $date,$clientID,$clientType,$operationType,$amount,$currency;
-
                 $beginningOfWeek = date('Y-m-d', strtotime('Monday this week', strtotime($date)));
                 $operationTypeMethod = $operationType . 'Charge';
                 // $operationType: deposit or withdraw
                 // processed with depositCharge or withdrawCharge method
                 $this->fees[] = $this->$operationTypeMethod($beginningOfWeek, $clientID, $clientType, $amount, $currency);
-
-//                spl_autoload_extensions('.php,.inc');
-//                spl_autoload_call($operationType);
-//                $qqq = new $operationType();
-//                $qqq->privateCharge($date, $clientID, $clientType, $amount, $currency);
-
             }
         }
-
         return $this->fees;
-
-//        print_r($this->withdrawBalance);
-//        print_r($this->fees);
-
     }
 
     private function fillExchangeRates()
@@ -120,15 +106,8 @@ class CommissionFee
                 $fee = ceil($amount * 0.5 * $powerCoeff) / $powerCoeff;
                 break;
             case 'private':
-//                if (isset($this->withdrawBalance[$clientID][$date])) {
                     $this->withdrawBalance[$clientID][$date]['itemNumber'] += 1;
                     $this->withdrawBalance[$clientID][$date]['amountUsedInEuro'] += $amount / $this->currencyRates[$currency];
-//                } else {
-//                    $this->withdrawBalance[$clientID][$date] = [
-//                        'itemNumber' => 1,
-//                        'amountUsedInEuro' => $amount / $this->currencyRates[$currency]
-//                    ];
-//                }
 
             $amountUsedInEuro = $this->withdrawBalance[$clientID][$date]['amountUsedInEuro'];
 

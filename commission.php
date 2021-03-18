@@ -10,9 +10,10 @@ if (!isset ($argv[0])) {
     die();
 }
 $filename = $argv[0] = 'input.csv';
-ini_set('auto_detect_line_endings', TRUE);
 
 $operations = [];
+
+ini_set('auto_detect_line_endings', TRUE);
 if (file_exists($filename) && is_file($filename)) {
     $handle = fopen($filename, 'r');
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -23,14 +24,8 @@ if (file_exists($filename) && is_file($filename)) {
     echo 'file ' . $filename . ' not found';
     die();
 }
-
 ini_set('auto_detect_line_endings', FALSE);
 
-$CommissionFeeList = new CommissionFee(['EUR' => 1,
-    'USD' => 1.1497,
-    'JPY' => 129.53]
-);
-print_r( $CommissionFeeList->process($operations));
-
-print_r($operations);
-//var_dump($argv);
+$commissionFeeList = new CommissionFee();
+//print_r( $commissionFeeList->process($operations));
+echo implode("\n", $commissionFeeList->process($operations));

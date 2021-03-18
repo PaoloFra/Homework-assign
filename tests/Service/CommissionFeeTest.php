@@ -147,9 +147,8 @@ class CommissionFeeTest extends TestCase
     }
 
     /**
-     * @param string $leftOperand
-     * @param string $rightOperand
-     * @param string $expectation
+     * @param array $leftOperand
+     * @param array $expectation
      *
      * @dataProvider dataProviderForAddTesting
      */
